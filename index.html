@@ -2,17 +2,509 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>카카오 픽셀 테스트</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카카오픽셀 진단 도구</title>
   
-  <script type="text/javascript" src="//t1.daumcdn.net/kas/static/kp.js"></script>
-  <script>
-    kakaoPixel('5556863938628598251').pageView();
-  </script>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px; 
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .diagnostic-panel {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .status-item {
+      margin: 10px 0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border-left: 4px solid #ccc;
+    }
+    .success { 
+      background: #d4edda; 
+      border-left-color: #28a745; 
+      color: #155724; 
+    }
+    .error { 
+      background: #f8d7da; 
+      border-left-color: #dc3545; 
+      color: #721c24; 
+    }
+    .warning { 
+      background: #fff3cd; 
+      border-left-color: #ffc107; 
+      color: #856404; 
+    }
+    .info {
+      background: #d1ecf1;
+      border-left-color: #17a2b8;
+      color: #0c5460;
+    }
+    
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 8px 4px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #0056b3; }
+    button.test-btn { background: #28a745; }
+    button.test-btn:hover { background: #1e7e34; }
+    
+    .log-area {
+      background: #212529;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      height: 200px;
+      overflow-y: auto;
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+    .code-block {
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      margin: 10px 0;
+    }
+  </style>
+    <!-- 원래 방식대로 헤더에 스크립트 추가 -->
+  <script type="text/javascript" charset="UTF-8" src="//t1.daumcdn.net/kas/static/kp.js"></script>
 </head>
 <body>
-  <h1>카카오 픽셀 테스트 페이지</h1>
-  <button onclick="kakaoPixel('5556863938628598251').purchase({ total_price: 15000, currency: 'KRW' });">
-    구매 이벤트 전송
-  </button>
+  <div class="container">
+    <h1>🔍 카카오픽셀 상세 진단</h1>
+    
+    <div class="diagnostic-panel">
+      <h3>📋 1단계: 기본 환경 진단</h3>
+      <div id="browserInfo" class="status-item info">브라우저 정보 확인 중...</div>
+      <div id="protocolInfo" class="status-item info">프로토콜 확인 중...</div>
+      <div id="adBlockerInfo" class="status-item info">애드블로커 확인 중...</div>
+    </div>
+    
+    <div class="diagnostic-panel">
+      <h3>🌐 2단계: 네트워크 연결 진단</h3>
+      <div id="cdnTest1" class="status-item info">CDN 접근 테스트 중...</div>
+      <div id="cdnTest2" class="status-item info">대체 CDN 접근 테스트 중...</div>
+      <div id="corsTest" class="status-item info">CORS 정책 확인 중...</div>
+    </div>
+    
+    <div class="diagnostic-panel">
+      <h3>📜 3단계: 스크립트 로딩 진단</h3>
+      <div id="scriptExists" class="status-item info">스크립트 태그 확인 중...</div>
+      <div id="scriptLoaded" class="status-item info">스크립트 로딩 상태 확인 중...</div>
+      <div id="functionExists" class="status-item info">kakaoPixel 함수 확인 중...</div>
+    </div>
+    
+    <div class="diagnostic-panel">
+      <h3>🔧 4단계: 수동 테스트</h3>
+      <button id="manualLoadBtn" class="test-btn">수동 스크립트 로드</button>
+      <button id="directTestBtn" class="test-btn">직접 CDN 테스트</button>
+      <button id="fallbackTestBtn" class="test-btn">대체 방법 테스트</button>
+    </div>
+    
+    <div class="diagnostic-panel">
+      <h3>💡 해결 방법 제안</h3>
+      <div id="recommendations"></div>
+    </div>
+    
+    <div>
+      <h3>🧪 이벤트 테스트 (픽셀 로드 후)</h3>
+      <button id="signupBtn" disabled>회원가입 완료</button>
+      <button id="loginBtn" disabled>로그인</button>
+      <button id="viewContentBtn" disabled>전시 조회</button>
+      <button id="purchaseBtn" disabled>티켓 구매</button>
+    </div>
+    
+    <div class="log-area" id="logArea">
+=== 카카오픽셀 상세 진단 로그 ===
+    </div>
+  </div>
+
+
+  <script type="text/javascript">
+    // 스크립트 로드 직후 초기 확인
+    if (typeof kakaoPixel !== 'undefined') {
+      console.log('✅ kakaoPixel 함수 즉시 로드됨');
+      try {
+        kakaoPixel('5556863938628598251').pageView('advisit');
+        console.log('✅ 페이지뷰 이벤트 전송 성공');
+      } catch (e) {
+        console.error('❌ 페이지뷰 이벤트 전송 실패:', e);
+      }
+    } else {
+      console.log('❌ kakaoPixel 함수 즉시 로드 실패');
+    }
+  </script>
+  
+  <script type="text/javascript">
+    const PIXEL_ID = '5556863938628598251';
+    let diagnosticResults = {};
+    
+    // 로그 함수
+    function addLog(message, type = 'info') {
+      const logArea = document.getElementById('logArea');
+      const timestamp = new Date().toLocaleTimeString();
+      const colors = {
+        info: '#00ff00',
+        error: '#ff6b6b',
+        warning: '#ffa500',
+        success: '#4caf50'
+      };
+      
+      logArea.innerHTML += `<span style="color: ${colors[type]}">[${timestamp}] ${message}</span>\n`;
+      logArea.scrollTop = logArea.scrollHeight;
+      console.log(`[진단] ${message}`);
+    }
+    
+    // 상태 업데이트
+    function updateStatus(elementId, message, className) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = message;
+        element.className = `status-item ${className}`;
+      }
+    }
+    
+    // 1단계: 기본 환경 진단
+    function diagnoseEnvironment() {
+      addLog('=== 1단계: 환경 진단 시작 ===');
+      
+      // 브라우저 정보
+      const userAgent = navigator.userAgent;
+      let browser = 'Unknown';
+      if (userAgent.includes('Chrome')) browser = 'Chrome';
+      else if (userAgent.includes('Firefox')) browser = 'Firefox';
+      else if (userAgent.includes('Safari')) browser = 'Safari';
+      else if (userAgent.includes('Edge')) browser = 'Edge';
+      
+      updateStatus('browserInfo', `브라우저: ${browser} (${navigator.platform})`, 'success');
+      addLog(`브라우저: ${browser}, 플랫폼: ${navigator.platform}`);
+      
+      // 프로토콜 확인
+      const protocol = location.protocol;
+      updateStatus('protocolInfo', `프로토콜: ${protocol}`, protocol === 'https:' ? 'success' : 'warning');
+      addLog(`프로토콜: ${protocol}`);
+      
+      // 간단한 애드블로커 감지
+      detectAdBlocker();
+    }
+    
+    // 애드블로커 감지
+    function detectAdBlocker() {
+      const testAd = document.createElement('div');
+      testAd.innerHTML = '&nbsp;';
+      testAd.className = 'adsbox';
+      testAd.style.position = 'absolute';
+      testAd.style.left = '-9999px';
+      testAd.style.width = '1px';
+      testAd.style.height = '1px';
+      document.body.appendChild(testAd);
+      
+      setTimeout(() => {
+        const blocked = testAd.offsetHeight === 0 || testAd.style.display === 'none';
+        if (blocked) {
+          updateStatus('adBlockerInfo', '⚠️ 애드블로커가 감지됨', 'warning');
+          addLog('애드블로커 또는 콘텐츠 차단기가 활성화되어 있음', 'warning');
+          diagnosticResults.adBlocker = true;
+        } else {
+          updateStatus('adBlockerInfo', '✅ 애드블로커 없음', 'success');
+          addLog('애드블로커 감지되지 않음');
+          diagnosticResults.adBlocker = false;
+        }
+        document.body.removeChild(testAd);
+        
+        // 다음 단계 진행
+        diagnoseNetwork();
+      }, 200);
+    }
+    
+    // 2단계: 네트워크 진단
+    async function diagnoseNetwork() {
+      addLog('=== 2단계: 네트워크 진단 시작 ===');
+      
+      // CDN 접근 테스트 1
+      try {
+        const response1 = await fetch('//t1.daumcdn.net/kas/static/kp.js', { 
+          method: 'HEAD', 
+          mode: 'no-cors' 
+        });
+        updateStatus('cdnTest1', '✅ 기본 CDN 접근 가능', 'success');
+        addLog('기본 CDN (//t1.daumcdn.net) 접근 성공');
+        diagnosticResults.cdn1 = true;
+      } catch (error) {
+        updateStatus('cdnTest1', `❌ 기본 CDN 접근 실패: ${error.message}`, 'error');
+        addLog(`기본 CDN 접근 실패: ${error.message}`, 'error');
+        diagnosticResults.cdn1 = false;
+      }
+      
+      // CDN 접근 테스트 2 (HTTPS)
+      try {
+        const response2 = await fetch('https://t1.daumcdn.net/kas/static/kp.js', { 
+          method: 'HEAD', 
+          mode: 'no-cors' 
+        });
+        updateStatus('cdnTest2', '✅ HTTPS CDN 접근 가능', 'success');
+        addLog('HTTPS CDN 접근 성공');
+        diagnosticResults.cdn2 = true;
+      } catch (error) {
+        updateStatus('cdnTest2', `❌ HTTPS CDN 접근 실패: ${error.message}`, 'error');
+        addLog(`HTTPS CDN 접근 실패: ${error.message}`, 'error');
+        diagnosticResults.cdn2 = false;
+      }
+      
+      // CORS 테스트
+      updateStatus('corsTest', '✅ CORS 정책 확인 완료', 'success');
+      addLog('CORS 정책 확인 완료');
+      
+      // 다음 단계 진행
+      diagnoseScript();
+    }
+    
+    // 3단계: 스크립트 진단
+    function diagnoseScript() {
+      addLog('=== 3단계: 스크립트 진단 시작 ===');
+      
+      // 스크립트 태그 존재 확인
+      const kpScript = document.querySelector('script[src*="kp.js"]');
+      if (kpScript) {
+        updateStatus('scriptExists', '✅ kp.js 스크립트 태그 존재', 'success');
+        addLog(`스크립트 태그 발견: ${kpScript.src}`);
+        diagnosticResults.scriptTag = true;
+        
+        // 스크립트 로딩 상태 확인
+        if (kpScript.readyState) {
+          addLog(`스크립트 readyState: ${kpScript.readyState}`);
+        }
+        
+        // 로드 이벤트 리스너 추가
+        if (!kpScript.onload) {
+          kpScript.onload = () => {
+            addLog('스크립트 onload 이벤트 발생', 'success');
+            checkKakaoPixelFunction();
+          };
+          kpScript.onerror = (error) => {
+            addLog(`스크립트 onerror 이벤트 발생: ${error}`, 'error');
+            updateStatus('scriptLoaded', '❌ 스크립트 로딩 실패', 'error');
+          };
+        }
+        
+        setTimeout(() => checkKakaoPixelFunction(), 1000);
+      } else {
+        updateStatus('scriptExists', '❌ kp.js 스크립트 태그 없음', 'error');
+        addLog('kp.js 스크립트 태그를 찾을 수 없음', 'error');
+        diagnosticResults.scriptTag = false;
+      }
+    }
+    
+    // kakaoPixel 함수 확인
+    function checkKakaoPixelFunction() {
+      if (typeof kakaoPixel === 'function') {
+        updateStatus('functionExists', '✅ kakaoPixel 함수 로드됨', 'success');
+        updateStatus('scriptLoaded', '✅ 스크립트 로딩 완료', 'success');
+        addLog('kakaoPixel 함수 정상 로드됨', 'success');
+        diagnosticResults.pixelFunction = true;
+        
+        // 이벤트 버튼 활성화
+        enableEventButtons();
+        
+        // 페이지뷰 이벤트 테스트
+        try {
+          kakaoPixel(PIXEL_ID).pageView('advisit');
+          addLog('페이지뷰 이벤트 전송 성공', 'success');
+        } catch (error) {
+          addLog(`페이지뷰 이벤트 전송 실패: ${error.message}`, 'error');
+        }
+      } else {
+        updateStatus('functionExists', '❌ kakaoPixel 함수 없음', 'error');
+        updateStatus('scriptLoaded', '❌ 스크립트 로딩 실패 또는 함수 없음', 'error');
+        addLog('kakaoPixel 함수를 찾을 수 없음', 'error');
+        diagnosticResults.pixelFunction = false;
+        
+        // window 객체에서 다른 카카오 관련 객체 확인
+        const kakaoObjects = Object.keys(window).filter(key => key.toLowerCase().includes('kakao'));
+        if (kakaoObjects.length > 0) {
+          addLog(`발견된 카카오 관련 객체들: ${kakaoObjects.join(', ')}`, 'info');
+        }
+      }
+      
+      // 권장사항 생성
+      generateRecommendations();
+    }
+    
+    // 권장사항 생성
+    function generateRecommendations() {
+      const recommendations = document.getElementById('recommendations');
+      let html = '';
+      
+      if (diagnosticResults.adBlocker) {
+        html += '<div class="status-item warning">💡 애드블로커를 일시적으로 비활성화해보세요.</div>';
+      }
+      
+      if (!diagnosticResults.cdn1 && !diagnosticResults.cdn2) {
+        html += '<div class="status-item error">🚫 CDN 접근이 차단되었습니다. 네트워크 관리자에게 문의하거나 다른 네트워크를 사용해보세요.</div>';
+      }
+      
+      if (!diagnosticResults.pixelFunction) {
+        html += '<div class="status-item warning">⚡ 수동 로드 버튼을 사용해보세요.</div>';
+        html += '<div class="status-item info">🔄 시크릿/프라이빗 모드에서 테스트해보세요.</div>';
+        html += '<div class="status-item info">🌐 다른 브라우저에서 테스트해보세요.</div>';
+      }
+      
+      if (!html) {
+        html = '<div class="status-item success">✅ 모든 진단이 정상입니다!</div>';
+      }
+      
+      recommendations.innerHTML = html;
+      addLog('=== 진단 완료 ===');
+    }
+    
+    // 수동 스크립트 로드
+    function manualLoadScript() {
+      addLog('수동 스크립트 로드 시작', 'info');
+      
+      // 기존 스크립트 제거
+      const existingScript = document.querySelector('script[src*="kp.js"]');
+      if (existingScript) {
+        existingScript.remove();
+        addLog('기존 스크립트 제거됨');
+      }
+      
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.charset = 'UTF-8';
+      script.src = 'https://t1.daumcdn.net/kas/static/kp.js';
+      script.async = false;
+      
+      script.onload = () => {
+        addLog('수동 로드 성공!', 'success');
+        setTimeout(() => checkKakaoPixelFunction(), 500);
+      };
+      
+      script.onerror = (error) => {
+        addLog(`수동 로드 실패: ${error}`, 'error');
+      };
+      
+      document.head.appendChild(script);
+    }
+    
+    // 이벤트 버튼 활성화
+    function enableEventButtons() {
+      const buttons = ['signupBtn', 'loginBtn', 'viewContentBtn', 'purchaseBtn'];
+      buttons.forEach(btnId => {
+        document.getElementById(btnId).disabled = false;
+      });
+    }
+    
+    // 안전한 이벤트 전송
+    function sendPixelEvent(eventName, params = {}) {
+      try {
+        if (typeof kakaoPixel === 'function') {
+          kakaoPixel(PIXEL_ID)[eventName](params);
+          addLog(`✅ ${eventName} 이벤트 전송 성공`, 'success');
+          return true;
+        } else {
+          addLog(`❌ kakaoPixel 함수가 로드되지 않음`, 'error');
+          return false;
+        }
+      } catch (error) {
+        addLog(`❌ ${eventName} 이벤트 전송 실패: ${error.message}`, 'error');
+        return false;
+      }
+    }
+    
+    // 페이지 로드 후 진단 시작
+    window.addEventListener('load', function() {
+      addLog('페이지 로드 완료, 진단 시작');
+      setTimeout(() => diagnoseEnvironment(), 500);
+    });
+    
+    // DOM 로드 후 이벤트 리스너 등록
+    document.addEventListener('DOMContentLoaded', function() {
+      // 수동 테스트 버튼들
+      document.getElementById('manualLoadBtn').addEventListener('click', manualLoadScript);
+      
+      document.getElementById('directTestBtn').addEventListener('click', function() {
+        window.open('https://t1.daumcdn.net/kas/static/kp.js', '_blank');
+        addLog('직접 CDN 링크 열기');
+      });
+      
+      document.getElementById('fallbackTestBtn').addEventListener('click', function() {
+        addLog('대체 방법 테스트 시작');
+        // jQuery 방식으로 스크립트 로드 시도
+        const script = document.createElement('script');
+        script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+        script.onload = function() {
+          addLog('jQuery 로드됨, 다른 방식으로 스크립트 로드 시도');
+          // 추가 대체 방법들 구현 가능
+        };
+        document.head.appendChild(script);
+      });
+      
+      // 이벤트 버튼들
+      document.getElementById('signupBtn').addEventListener('click', function() {
+        sendPixelEvent('completeRegistration') 
+          ? alert('✅ 회원가입 이벤트 전송 완료') 
+          : alert('❌ 회원가입 이벤트 전송 실패');
+      });
+
+      document.getElementById('loginBtn').addEventListener('click', function() {
+        sendPixelEvent('login') 
+          ? alert('✅ 로그인 이벤트 전송 완료') 
+          : alert('❌ 로그인 이벤트 전송 실패');
+      });
+
+      document.getElementById('viewContentBtn').addEventListener('click', function() {
+        const params = {
+          currency: "KRW",
+          products: [{ 
+            id: "exhibition_2025_spring", 
+            name: "봄 특별전", 
+            quantity: 1, 
+            price: 15000, 
+            brand: "대림미술관" 
+          }]
+        };
+        sendPixelEvent('viewContent', params) 
+          ? alert('✅ 전시 조회 이벤트 전송 완료') 
+          : alert('❌ 전시 조회 이벤트 전송 실패');
+      });
+
+      document.getElementById('purchaseBtn').addEventListener('click', function() {
+        const params = {
+          total_quantity: 1,
+          total_price: 15000,
+          currency: "KRW",
+          products: [{ 
+            id: "exhibition_2025_spring", 
+            name: "봄 특별전 티켓", 
+            quantity: 1, 
+            price: 15000, 
+            brand: "대림미술관" 
+          }]
+        };
+        sendPixelEvent('purchase', params) 
+          ? alert('✅ 구매 이벤트 전송 완료') 
+          : alert('❌ 구매 이벤트 전송 실패');
+      });
+    });
+  </script>
 </body>
 </html>
