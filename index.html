@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카카오픽셀 이벤트 샘플</title>
+
+  <!-- 카카오 픽셀 기본 스크립트 -->
+  <script type="text/javascript" src="//t1.daumcdn.net/kas/static/kp.js"></script>
+  <script type="text/javascript">
+    // 페이지 방문 이벤트 (모든 페이지 공통)
+    kakaoPixel('5556863938628598251').pageView();
+  </script>
+</head>
+<body>
+  <h1>카카오픽셀 이벤트 테스트 페이지</h1>
+
+  <!-- 회원가입 완료 버튼 -->
+  <button id="signupCompleteBtn">회원가입 완료</button>
+
+  <!-- 로그인 버튼 -->
+  <button id="loginBtn">로그인</button>
+
+  <!-- 전시 목록 보기 버튼 -->
+  <button id="viewExhibitionListBtn">현재 전시 목록 조회</button>
+
+  <!-- 전시 상세 보기 버튼 -->
+  <button id="viewExhibitionDetailBtn">현재 전시 상세 조회</button>
+
+  <!-- 티켓 구매 버튼 -->
+  <button id="purchaseBtn">티켓 구매하기</button>
+
+  <script>
+    // 회원가입 이벤트
+    document.getElementById("signupCompleteBtn").addEventListener("click", function() {
+      kakaoPixel('5556863938628598251').event("CompleteRegistration");
+      alert("회원가입 이벤트 전송 완료");
+    });
+
+    // 로그인 이벤트
+    document.getElementById("loginBtn").addEventListener("click", function() {
+      kakaoPixel('5556863938628598251').event("Login");
+      alert("로그인 이벤트 전송 완료");
+    });
+
+    // 전시 목록 조회
+    document.getElementById("viewExhibitionListBtn").addEventListener("click", function() {
+      kakaoPixel('5556863938628598251').event("ViewContent", {
+        id: "exhibition_list_2025",
+        name: "2025 봄 전시 목록",
+        category: "전시"
+      });
+      alert("전시 목록 이벤트 전송 완료");
+    });
+
+    // 전시 상세 조회
+    document.getElementById("viewExhibitionDetailBtn").addEventListener("click", function() {
+      kakaoPixel('5556863938628598251').event("ViewContent", {
+        id: "exhibition_2025_spring",
+        name: "봄 특별전",
+        category: "전시"
+      });
+      alert("전시 상세 이벤트 전송 완료");
+    });
+
+    // 티켓 구매 이벤트
+    document.getElementById("purchaseBtn").addEventListener("click", function() {
+      kakaoPixel('5556863938628598251').event("Purchase", {
+        currency: "KRW",
+        price: 15000,
+        quantity: 2,
+        content_type: "ticket",
+        content_name: "봄 특별전 티켓"
+      });
+      alert("구매 이벤트 전송 완료");
+    });
+  </script>
+</body>
+</html>
