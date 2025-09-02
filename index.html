@@ -2,53 +2,17 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>카카오픽셀 이벤트 샘플</title>
-  <!-- 카카오 픽셀 -->
-  <script type="text/javascript" charset="UTF-8" src="//t1.daumcdn.net/kas/static/kp.js"></script>
+  <title>카카오 픽셀 테스트</title>
+  
+  <script type="text/javascript" src="//t1.daumcdn.net/kas/static/kp.js"></script>
+  <script>
+    kakaoPixel('YOUR_PIXEL_ID').pageView();
+  </script>
 </head>
 <body>
-  <h1>카카오픽셀 공식 이벤트 테스트</h1>
-
-  <button id="signupBtn">회원가입 완료</button>
-  <button id="loginBtn">로그인</button>
-  <button id="viewContentBtn">전시 조회</button>
-  <button id="purchaseBtn">티켓 구매</button>
-
-  <script>
-    kakaoPixel('5556863938628598251').pageView();
-    
-    document.getElementById("signupBtn").addEventListener("click", function() {
-      kakaoPixel('5556863938628598251').completeRegistration();
-      alert("회원가입 이벤트 전송");
-    });
-
-    document.getElementById("loginBtn").addEventListener("click", function() {
-      kakaoPixel('5556863938628598251').login();
-      alert("로그인 이벤트 전송");
-    });
-
-    document.getElementById("viewContentBtn").addEventListener("click", function() {
-      kakaoPixel('5556863938628598251').viewContent({
-        currency: "KRW",
-        products: [
-          { id: "exhibition_2025_spring", name: "봄 특별전", quantity: 1, price: 15000, brand: "대림미술관" }
-        ]
-      });
-      alert("전시 조회 이벤트 전송");
-    });
-
-    document.getElementById("purchaseBtn").addEventListener("click", function() {
-      kakaoPixel('5556863938628598251').purchase({
-        total_quantity: 1,
-        total_price: 15000,
-        currency: "KRW",
-        products: [
-          { id: "exhibition_2025_spring", name: "봄 특별전 티켓", quantity: 1, price: 15000, brand: "대림미술관" }
-        ]
-      });
-      alert("구매 이벤트 전송");
-    });
-  </script>
+  <h1>카카오 픽셀 테스트 페이지</h1>
+  <button onclick="kakaoPixel('YOUR_PIXEL_ID').purchase({ total_price: 15000, currency: 'KRW' });">
+    구매 이벤트 전송
+  </button>
 </body>
 </html>
